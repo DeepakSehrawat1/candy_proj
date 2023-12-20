@@ -1,19 +1,17 @@
-var form = document.getElementById("form_group");
-
-form.addEventListener("submit", addelement);
-
-window.addEventListener("DOMContentLoaded", function () {
+// Function to reload and display items from the API
+function reloadd() {
   axios
-    .get("https://crudcrud.com/api/8da56eb5f64744ccb534a74601713e98/candy")
+    .get("https://crudcrud.com/api/69a11d9d2512450aa9e012c8241172d6/candy")
     .then((res) => {
+      clearItems(); // Clear existing items before reloading
       for (var i = 0; i < res.data.length; i++) {
-        console.log(res.data[i]);
         showele(res.data[i]);
       }
     })
-    .catch((ele) => console.log("error"));
-});
+    .catch((err) => console.log("Error loading items"));
+}
 
+// Function to add an item to the screen and API
 function addelement(e) {
   e.preventDefault();
   var item1 = document.getElementById("amount").value;
@@ -30,131 +28,102 @@ function addelement(e) {
 
   axios
     .post(
-      "https://crudcrud.com/api/8da56eb5f64744ccb534a74601713e98/candy",
+      "https://crudcrud.com/api/69a11d9d2512450aa9e012c8241172d6/candy/",
       myobj
     )
-    .then((res) => showele(myobj))
-    .catch((err) => console.log(err));
+    .then((res) => {
+      console.log(res);
+      console.log(res.data);
+      showele(res.data);
+    })
+    .catch((err) => console.log("Error adding item"));
 
-  document.getElementById("amount").value = " ";
-  document.getElementById("job").value = " ";
-  document.getElementById("category").value = " ";
-  document.getElementById("quantity").value = " ";
+  clearForm();
 }
 
+// Function to display an item on the screen
 function showele(obj) {
   var items = document.getElementById("items");
 
-  //creating li
+  // Creating li
   var newitem = document.createElement("li");
+  newitem.id = obj._id; // Set the ID of the new item
 
-  //attaching to li
-  newitem.appendChild(document.createTextNode(obj.price));
-  newitem.appendChild(document.createTextNode(obj.description));
-  newitem.appendChild(document.createTextNode(obj.name));
-  newitem.appendChild(document.createTextNode(obj.quantity));
+  // Attaching to li
+  newitem.appendChild(document.createTextNode(`Price: ${obj.price}`));
+  newitem.appendChild(
+    document.createTextNode(`Description: ${obj.description}`)
+  );
+  newitem.appendChild(document.createTextNode(`Name: ${obj.name}`));
 
-  //creating buy1 btn
-  var buy1 = document.createElement("button");
-  buy1.id = "buy1";
-  buy1.appendChild(document.createTextNode("BUY 1"));
-  newitem.appendChild(buy1);
+  // Display quantity dynamically
+  var quantityNode = document.createElement("span");
+  quantityNode.appendChild(
+    document.createTextNode(`Quantity: ${obj.quantity}`)
+  );
+  newitem.appendChild(quantityNode);
 
-  //creating buy2 btn
-  var buy2 = document.createElement("button");
-  buy2.id = "buy2";
-  buy2.appendChild(document.createTextNode("Buy 2"));
-  newitem.appendChild(buy2);
-
-  //creating buy3 btn
-  var buy3 = document.createElement("button");
-  buy3.id = "buy3";
-  buy3.appendChild(document.createTextNode("Buy 3"));
-  newitem.appendChild(buy3);
+  // Creating buy buttons
+  for (let i = 1; i <= 3; i++) {
+    var buyBtn = document.createElement("button");
+    buyBtn.appendChild(document.createTextNode(`BUY ${i}`));
+    buyBtn.addEventListener("click", function (e) {
+      e.preventDefault();
+      updateQuantity(obj, i, quantityNode);
+    });
+    newitem.appendChild(buyBtn);
+  }
 
   items.appendChild(newitem);
-
-  buy1.addEventListener("click", function (e) {
-    e.preventDefault();
-    var count = obj.quantity - 1;
-    console.log(count);
-
-    if (count < 0) {
-      alert("stock finished");
-      exit();
-    }
-
-    let updated1 = {
-      price: obj.price,
-      description: obj.description,
-      name: obj.name,
-      quantity: count,
-    };
-    axios
-      .put(
-        "https://crudcrud.com/api/8da56eb5f64744ccb534a74601713e98/candy/" +
-          obj._id,
-        updated1
-      )
-      .then((res) => {
-        console.log("updated");
-      })
-      .catch((err) => console.log(err));
-  });
-
-  buy2.addEventListener("click", function (e) {
-    e.preventDefault();
-    var count2 = obj.quantity - 2;
-    console.log(count2);
-
-    if (count2 < 0) {
-      alert("stock finished");
-      exit();
-    }
-
-    let updated2 = {
-      price: obj.price,
-      description: obj.description,
-      name: obj.name,
-      quantity: count2,
-    };
-    axios
-      .put(
-        "https://crudcrud.com/api/8da56eb5f64744ccb534a74601713e98/candy/" +
-          obj._id,
-        updated2
-      )
-      .then((res) => {
-        console.log("updated");
-      })
-      .catch((err) => console.log(err));
-  });
-
-  buy3.addEventListener("click", function (e) {
-    e.preventDefault();
-    var count3 = obj.quantity - 3;
-    console.log(count3);
-
-    if (count3 < 0) {
-      alert("stock finished");
-      exit();
-    }
-
-    let updated3 = {
-      price: obj.price,
-      description: obj.description,
-      name: obj.name,
-      quantity: count3,
-    };
-    axios
-      .put(
-        "https://crudcrud.com/api/8da56eb5f64744ccb534a74601713e98/candy/" +
-          obj._id,
-        updated3
-      )
-      .then((res) => {
-        console.log("updated");
-      })
-      .catch((err) => console.log(err));
-  });
 }
+
+// Function to update quantity in place
+function updateQuantity(obj, decrement, quantityNode) {
+  var count = obj.quantity - decrement;
+
+  if (count < 0) {
+    alert("Stock finished");
+    return;
+  }
+
+  let updated = {
+    price: obj.price,
+    description: obj.description,
+    name: obj.name,
+    quantity: count,
+  };
+
+  axios
+    .put(
+      "https://crudcrud.com/api/69a11d9d2512450aa9e012c8241172d6/candy/" +
+        obj._id,
+      updated
+    )
+    .then((res) => {
+      // Update the displayed quantity dynamically
+
+      quantityNode.textContent = `Quantity: ${count}`;
+    })
+    .catch((err) => console.log("Error updating quantity"));
+}
+
+// Function to clear the form after adding an item
+function clearForm() {
+  document.getElementById("amount").value = "";
+  document.getElementById("job").value = "";
+  document.getElementById("category").value = "";
+  document.getElementById("quantity").value = "";
+}
+
+// Function to clear all items from the screen
+function clearItems() {
+  var items = document.getElementById("items");
+  items.innerHTML = "";
+}
+
+// Event listener for form submission
+var form = document.getElementById("form_group");
+form.addEventListener("submit", addelement);
+
+// Load items on page load
+window.addEventListener("DOMContentLoaded", reloadd);
