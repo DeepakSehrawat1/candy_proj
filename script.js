@@ -1,18 +1,19 @@
-// Function to reload and display items from the API
-function reloadd() {
-  axios
-    .get("https://crudcrud.com/api/69a11d9d2512450aa9e012c8241172d6/candy")
-    .then((res) => {
-      clearItems(); // Clear existing items before reloading
-      for (var i = 0; i < res.data.length; i++) {
-        showele(res.data[i]);
-      }
-    })
-    .catch((err) => console.log("Error loading items"));
+async function reloadd() {
+  try {
+    const res = await axios.get(
+      "https://crudcrud.com/api/bdd05f587e0641d89ddd63ab0f9efc56/candy"
+    );
+    clearItems(); // Clear existing items before reloading
+    for (let i = 0; i < res.data.length; i++) {
+      showele(res.data[i]);
+    }
+  } catch (err) {
+    console.error("Error loading items", err);
+  }
 }
 
 // Function to add an item to the screen and API
-function addelement(e) {
+async function addelement(e) {
   e.preventDefault();
   var item1 = document.getElementById("amount").value;
   var item2 = document.getElementById("job").value;
@@ -26,22 +27,20 @@ function addelement(e) {
     quantity: item4,
   };
 
-  axios
-    .post(
-      "https://crudcrud.com/api/69a11d9d2512450aa9e012c8241172d6/candy/",
+  try {
+    const res = await axios.post(
+      "https://crudcrud.com/api/bdd05f587e0641d89ddd63ab0f9efc56/candy/",
       myobj
-    )
-    .then((res) => {
-      console.log(res);
-      console.log(res.data);
-      showele(res.data);
-    })
-    .catch((err) => console.log("Error adding item"));
+    );
+
+    showele(res.data);
+  } catch (err) {
+    console.error("Error adding item", err);
+  }
 
   clearForm();
 }
 
-// Function to display an item on the screen
 function showele(obj) {
   var items = document.getElementById("items");
 
@@ -78,7 +77,7 @@ function showele(obj) {
 }
 
 // Function to update quantity in place
-function updateQuantity(obj, decrement, quantityNode) {
+async function updateQuantity(obj, decrement, quantityNode) {
   var count = obj.quantity - decrement;
 
   if (count < 0) {
@@ -93,21 +92,19 @@ function updateQuantity(obj, decrement, quantityNode) {
     quantity: count,
   };
 
-  axios
-    .put(
-      "https://crudcrud.com/api/69a11d9d2512450aa9e012c8241172d6/candy/" +
-        obj._id,
+  try {
+    const res = await axios.put(
+      `https://crudcrud.com/api/bdd05f587e0641d89ddd63ab0f9efc56/candy/${obj._id}`,
       updated
-    )
-    .then((res) => {
-      // Update the displayed quantity dynamically
-
-      quantityNode.textContent = `Quantity: ${count}`;
-    })
-    .catch((err) => console.log("Error updating quantity"));
+    );
+    // Update the displayed quantity dynamically
+    obj.quantity = count;
+    quantityNode.textContent = `Quantity: ${count}`;
+  } catch (err) {
+    console.error("Error updating quantity", err);
+  }
 }
 
-// Function to clear the form after adding an item
 function clearForm() {
   document.getElementById("amount").value = "";
   document.getElementById("job").value = "";
@@ -115,15 +112,12 @@ function clearForm() {
   document.getElementById("quantity").value = "";
 }
 
-// Function to clear all items from the screen
 function clearItems() {
   var items = document.getElementById("items");
   items.innerHTML = "";
 }
 
-// Event listener for form submission
 var form = document.getElementById("form_group");
 form.addEventListener("submit", addelement);
 
-// Load items on page load
 window.addEventListener("DOMContentLoaded", reloadd);
